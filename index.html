@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Mud Map & Cut List — Roofing Down Under</title>
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#B94A1E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RDU Crew">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rust: #B94A1E;
+    --rust-dark: #8C3512;
+    --rust-light: #D4693A;
+    --cream: #F5EDD8;
+    --cream-dark: #E8D9BB;
+    --charcoal: #2A2118;
+    --warm-grey: #7A6A58;
+    --orange-accent: #E8731A;
+    --white: #FDFAF4;
+    --green: #2D7A4F;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background-color: var(--charcoal);
+    background-image:
+      radial-gradient(ellipse at 20% 0%, rgba(185,74,30,0.15) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 100%, rgba(232,115,26,0.1) 0%, transparent 60%);
+    min-height: 100vh;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--charcoal);
+    padding: 40px 16px 80px;
+  }
+
+  .page-wrap { max-width: 680px; margin: 0 auto; }
+
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .logo-badge {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--rust);
+    border-radius: 50%;
+    width: 80px; height: 80px;
+    justify-content: center;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 32px rgba(185,74,30,0.5);
+  }
+
+  .logo-badge .paw { font-size: 32px; }
+
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(24px, 5vw, 36px);
+    color: var(--cream);
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+
+  .header h1 span { color: var(--orange-accent); }
+  .header p { color: var(--warm-grey); font-size: 13px; margin-top: 8px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+  .card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 32px 28px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .section-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--rust);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--cream-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-label .icon { font-size: 18px; }
+
+  .field { margin-bottom: 20px; }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--charcoal);
+    margin-bottom: 6px;
+    letter-spacing: 0.2px;
+  }
+
+  label .req { color: var(--rust); margin-left: 2px; }
+
+  input[type="text"],
+  input[type="date"],
+  input[type="tel"],
+  select,
+  textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--cream-dark);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--charcoal);
+    background: var(--white);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    appearance: none;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--rust);
+    box-shadow: 0 0 0 3px rgba(185,74,30,0.12);
+  }
+
+  textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237A6A58' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  @media (max-width: 480px) {
+    .two-col { grid-template-columns: 1fr; }
+    .card { padding: 24px 18px; }
+  }
+
+  .material-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .material-row input { margin: 0; font-size: 14px; padding: 9px 10px; }
+
+  .remove-btn {
+    background: none;
+    border: none;
+    color: var(--warm-grey);
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+    line-height: 1;
+  }
+
+  .remove-btn:hover { color: var(--rust); background: rgba(185,74,30,0.08); }
+
+  .material-header {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .material-header span {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--warm-grey);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0 10px;
+  }
+
+  .add-row-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: 1.5px dashed var(--cream-dark);
+    color: var(--rust);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 4px;
+  }
+
+  .add-row-btn:hover { border-color: var(--rust); background: rgba(185,74,30,0.05); }
+
+  .photo-upload {
+    border: 2px dashed var(--cream-dark);
+    border-radius: 12px;
+    padding: 28px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(245,237,216,0.3);
+  }
+
+  .photo-upload:hover, .photo-upload.drag-over { border-color: var(--rust); background: rgba(185,74,30,0.05); }
+  .photo-upload input { display: none; }
+  .photo-upload .upload-icon { font-size: 36px; margin-bottom: 8px; }
+  .photo-upload p { font-size: 14px; color: var(--warm-grey); }
+  .photo-upload p strong { color: var(--rust); }
+
+  .photo-previews { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+
+  .photo-preview {
+    position: relative;
+    width: 80px; height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid var(--cream-dark);
+  }
+
+  .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+
+  .photo-preview .del-photo {
+    position: absolute;
+    top: 2px; right: 2px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px; height: 20px;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Submit button */
+  .submit-btn {
+    width: 100%;
+    background: var(--rust);
+    color: var(--cream);
+    border: none;
+    border-radius: 12px;
+    padding: 17px;
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+    box-shadow: 0 6px 24px rgba(185,74,30,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .submit-btn:hover { background: var(--rust-dark); box-shadow: 0 8px 32px rgba(185,74,30,0.5); transform: translateY(-1px); }
+  .submit-btn:active { transform: translateY(0); }
+  .submit-btn:disabled { background: var(--warm-grey); cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* Spinner */
+  .spinner {
+    width: 20px; height: 20px;
+    border: 3px solid rgba(245,237,216,0.3);
+    border-top-color: var(--cream);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: none;
+  }
+
+  /* Success */
+  .success-screen {
+    display: none;
+    text-align: center;
+    padding: 48px 24px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .success-screen.show { display: block; }
+  .success-screen .check { font-size: 64px; margin-bottom: 16px; }
+
+  .success-screen h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    color: var(--cream);
+    margin-bottom: 8px;
+  }
+
+  .success-screen p { color: var(--warm-grey); font-size: 15px; line-height: 1.6; }
+
+  .new-entry-btn {
+    margin-top: 24px;
+    background: var(--rust);
+    color: var(--cream);
+    border: none;
+    border-radius: 10px;
+    padding: 13px 28px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .new-entry-btn:hover { background: var(--rust-dark); }
+
+  /* Error banner */
+  .error-banner {
+    display: none;
+    background: #FFF0ED;
+    border: 1.5px solid var(--rust);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    color: var(--rust-dark);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .hint { font-size: 12px; color: var(--warm-grey); margin-top: 5px; }
+
+  .extra-meas-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .extra-meas-row input { font-size: 14px; padding: 9px 10px; }
+
+  @keyframes fadeDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .form-wrap { animation: fadeUp 0.4s ease both; }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo-badge"><span class="paw">🐾</span></div>
+    <h1>Mud Map & <span>Cut List</span></h1>
+    <p>Roofing Down Under — Crew Site Submission</p>
+  </div>
+
+  <!-- SUCCESS SCREEN -->
+  <div class="card success-screen" id="successScreen">
+    <div class="check">✅</div>
+    <h2>Job Logged, Legend!</h2>
+    <p>Your mud map and cut list is now in the Google Sheet.<br>Myla will get onto materials from here.</p>
+    <button class="new-entry-btn" onclick="resetForm()">Submit Another Job</button>
+  </div>
+
+  <!-- FORM -->
+  <div class="form-wrap" id="formWrap">
+
+    <div class="error-banner" id="errorBanner">⚠️ Submission failed. Check your connection and try again.</div>
+
+    <!-- SECTION 1: JOB DETAILS -->
+    <div class="card">
+      <div class="section-label"><span class="icon">📋</span> Job Details</div>
+
+      <div class="two-col">
+        <div class="field">
+          <label>Your Name <span class="req">*</span></label>
+          <input type="text" id="crewName" placeholder="e.g. Harry">
+        </div>
+        <div class="field">
+          <label>Date on Site <span class="req">*</span></label>
+          <input type="date" id="siteDate">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Job Address <span class="req">*</span></label>
+        <input type="text" id="jobAddress" placeholder="e.g. 42 Morris Street, St Marys NSW 2760">
+      </div>
+
+      <div class="two-col">
+        <div class="field">
+          <label>Client / Builder Name</label>
+          <input type="text" id="clientName" placeholder="e.g. Sam Vodjdani">
+        </div>
+        <div class="field">
+          <label>Contact Number</label>
+          <input type="tel" id="clientPhone" placeholder="04xx xxx xxx">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Roof Type <span class="req">*</span></label>
+        <input type="text" id="roofType" placeholder="e.g. Colorbond Corrugated, Box Gutter, Tile...">
+      </div>
+    </div>
+
+    <!-- SECTION 2: MUD MAP -->
+    <div class="card">
+      <div class="section-label"><span class="icon">📐</span> Mud Map — Measurements</div>
+
+      <div class="two-col">
+        <div class="field">
+          <label>Total Roof Area (m²)</label>
+          <input type="text" id="totalArea" placeholder="e.g. 220">
+        </div>
+        <div class="field">
+          <label>Ridge / Hip Length (lm)</label>
+          <input type="text" id="ridgeLength" placeholder="e.g. 45">
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="field">
+          <label>Gutter Run (lm)</label>
+          <input type="text" id="gutterRun" placeholder="e.g. 60">
+        </div>
+        <div class="field">
+          <label>Downpipe Qty</label>
+          <input type="text" id="downpipeQty" placeholder="e.g. 4">
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="field">
+          <label>Flashing Run (lm)</label>
+          <input type="text" id="flashingRun" placeholder="e.g. 32">
+        </div>
+        <div class="field">
+          <label>Roof Pitch (degrees)</label>
+          <input type="text" id="roofPitch" placeholder="e.g. 15°">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Key Notes / Sketch Description</label>
+        <textarea id="mudMapNotes" placeholder="Describe roof layout, areas, access points, scaffold needs, problem spots..."></textarea>
+        <p class="hint">Tip: mention sumps, outlets, corners, special profiles, colour selections</p>
+      </div>
+
+      <!-- SKETCH UPLOAD -->
+      <div class="field">
+        <label>Attach Sketch / Mud Map File</label>
+        <div class="photo-upload" id="sketchDropZone" onclick="document.getElementById('sketchInput').click()">
+          <input type="file" id="sketchInput" multiple accept="image/*,.pdf,.jpg,.jpeg,.png" onchange="handleSketches(this.files)">
+          <div class="upload-icon">✏️</div>
+          <p><strong>Tap to attach your sketch</strong></p>
+          <p>Photo of hand-drawn sketch, PDF, or image file</p>
+        </div>
+        <div class="photo-previews" id="sketchPreviews"></div>
+      </div>
+
+      <!-- EXTRA MEASUREMENTS -->
+      <div class="field" style="margin-top: 8px;">
+        <label>Additional Measurements</label>
+        <p class="hint" style="margin-bottom: 10px;">Got measurements that don't fit above? Add them here — label it and put the value.</p>
+        <div id="extraMeasRows">
+          <div class="extra-meas-row">
+            <input type="text" placeholder="e.g. Valley Length" style="flex:1.5">
+            <input type="text" placeholder="e.g. 18lm" style="flex:1">
+            <button class="remove-btn" onclick="removeExtraRow(this)">✕</button>
+          </div>
+        </div>
+        <button class="add-row-btn" onclick="addExtraRow()" style="margin-top: 8px;">＋ Add Measurement</button>
+      </div>
+    </div>
+
+    <!-- SECTION 3: CUT LIST -->
+    <div class="card">
+      <div class="section-label"><span class="icon">✂️</span> Cut List — Materials Required</div>
+
+      <div class="material-header">
+        <span>Material / Item</span>
+        <span>Length / Size</span>
+        <span>Qty</span>
+        <span></span>
+      </div>
+
+      <div id="materialRows">
+        <div class="material-row">
+          <input type="text" placeholder="e.g. Colorbond Sheet – Ironstone">
+          <input type="text" placeholder="e.g. 4200mm">
+          <input type="text" placeholder="e.g. 24">
+          <button class="remove-btn" onclick="removeRow(this)">✕</button>
+        </div>
+      </div>
+
+      <button class="add-row-btn" onclick="addRow()">＋ Add Material</button>
+
+      <div class="field" style="margin-top: 20px;">
+        <label>Colour / Profile Spec</label>
+        <input type="text" id="colourSpec" placeholder="e.g. Colorbond Ironstone, 0.42 BMT, Corrugated">
+      </div>
+
+      <div class="field">
+        <label>Special Orders or Notes</label>
+        <textarea id="cutListNotes" placeholder="Custom lengths, special flashings, specific suppliers, delivery instructions..."></textarea>
+      </div>
+    </div>
+
+    <!-- SECTION 4: PHOTOS -->
+    <div class="card">
+      <div class="section-label"><span class="icon">📸</span> Site Photos</div>
+      <div class="photo-upload" id="dropZone" onclick="document.getElementById('photoInput').click()">
+        <input type="file" id="photoInput" multiple accept="image/*" onchange="handlePhotos(this.files)">
+        <div class="upload-icon">📷</div>
+        <p><strong>Tap to upload photos</strong></p>
+        <p>Before, during, measurements — anything that helps</p>
+      </div>
+      <div class="photo-previews" id="photoPreviews"></div>
+    </div>
+
+    <!-- SUBMIT -->
+    <button class="submit-btn" id="submitBtn" onclick="submitForm()">
+      <span id="btnText">Submit to Rocky 🐾</span>
+      <div class="spinner" id="spinner"></div>
+    </button>
+
+  </div>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────
+  // 👇 PASTE YOUR WEB APP URL HERE AFTER DEPLOYING
+  // ─────────────────────────────────────────────
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxDQX5D-72X7KIUBsYGAh0ASaIur5MkW0KQrgyowqLhq-NUi8npVV6pjoCAx2XtwJ0/exec";
+  // ─────────────────────────────────────────────
+
+  document.getElementById('siteDate').valueAsDate = new Date();
+
+  // ── SKETCH UPLOAD ──
+  const sketches = [];
+
+  function handleSketches(files) {
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        sketches.push({ name: file.name, data: e.target.result, type: file.type });
+        renderSketchPreviews();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderSketchPreviews() {
+    const container = document.getElementById('sketchPreviews');
+    container.innerHTML = '';
+    sketches.forEach((s, i) => {
+      const div = document.createElement('div');
+      div.className = 'photo-preview';
+      if (s.type && s.type.startsWith('image/')) {
+        div.innerHTML = `<img src="${s.data}" alt="${s.name}"><button class="del-photo" onclick="removeSketch(${i})">✕</button>`;
+      } else {
+        div.style.cssText = 'width:auto;height:auto;padding:8px 12px;display:flex;align-items:center;gap:6px;font-size:13px;border-radius:8px;border:2px solid var(--cream-dark);';
+        div.innerHTML = `📄 ${s.name} <button class="del-photo" style="position:static;width:auto;height:auto;border-radius:4px;padding:2px 6px;" onclick="removeSketch(${i})">✕</button>`;
+      }
+      container.appendChild(div);
+    });
+  }
+
+  function removeSketch(i) { sketches.splice(i, 1); renderSketchPreviews(); }
+
+  const sketchDropZone = document.getElementById('sketchDropZone');
+  sketchDropZone.addEventListener('dragover', e => { e.preventDefault(); sketchDropZone.classList.add('drag-over'); });
+  sketchDropZone.addEventListener('dragleave', () => sketchDropZone.classList.remove('drag-over'));
+  sketchDropZone.addEventListener('drop', e => { e.preventDefault(); sketchDropZone.classList.remove('drag-over'); handleSketches(e.dataTransfer.files); });
+
+  // ── EXTRA MEASUREMENTS ──
+  function addExtraRow() {
+    const container = document.getElementById('extraMeasRows');
+    const row = document.createElement('div');
+    row.className = 'extra-meas-row';
+    row.innerHTML = `
+      <input type="text" placeholder="e.g. Valley Length" style="flex:1.5">
+      <input type="text" placeholder="e.g. 18lm" style="flex:1">
+      <button class="remove-btn" onclick="removeExtraRow(this)">✕</button>
+    `;
+    container.appendChild(row);
+    row.querySelector('input').focus();
+  }
+
+  function removeExtraRow(btn) {
+    const rows = document.querySelectorAll('.extra-meas-row');
+    if (rows.length > 1) btn.parentElement.remove();
+  }
+
+  function getExtraMeasurements() {
+    return Array.from(document.querySelectorAll('.extra-meas-row')).map(row => {
+      const inputs = row.querySelectorAll('input');
+      return { label: inputs[0].value.trim(), value: inputs[1].value.trim() };
+    }).filter(r => r.label !== '');
+  }
+
+  function addRow() {
+    const container = document.getElementById('materialRows');
+    const row = document.createElement('div');
+    row.className = 'material-row';
+    row.innerHTML = `
+      <input type="text" placeholder="e.g. Gutter – 150mm quad">
+      <input type="text" placeholder="e.g. 6000mm">
+      <input type="text" placeholder="e.g. 8">
+      <button class="remove-btn" onclick="removeRow(this)">✕</button>
+    `;
+    container.appendChild(row);
+    row.querySelector('input').focus();
+  }
+
+  function removeRow(btn) {
+    const rows = document.querySelectorAll('.material-row');
+    if (rows.length > 1) btn.parentElement.remove();
+  }
+
+  const photos = [];
+
+  function handlePhotos(files) {
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        photos.push({ name: file.name, data: e.target.result });
+        renderPreviews();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderPreviews() {
+    const container = document.getElementById('photoPreviews');
+    container.innerHTML = '';
+    photos.forEach((p, i) => {
+      const div = document.createElement('div');
+      div.className = 'photo-preview';
+      div.innerHTML = `
+        <img src="${p.data}" alt="${p.name}">
+        <button class="del-photo" onclick="removePhoto(${i})">✕</button>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  function removePhoto(i) { photos.splice(i, 1); renderPreviews(); }
+
+  const dropZone = document.getElementById('dropZone');
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); handlePhotos(e.dataTransfer.files); });
+
+  function getCutList() {
+    return Array.from(document.querySelectorAll('.material-row')).map(row => {
+      const inputs = row.querySelectorAll('input');
+      return {
+        material: inputs[0].value.trim(),
+        size: inputs[1].value.trim(),
+        qty: inputs[2].value.trim()
+      };
+    }).filter(r => r.material !== '');
+  }
+
+  function setLoading(loading) {
+    const btn = document.getElementById('submitBtn');
+    const text = document.getElementById('btnText');
+    const spinner = document.getElementById('spinner');
+    btn.disabled = loading;
+    text.textContent = loading ? 'Submitting...' : 'Submit to Rocky 🐾';
+    spinner.style.display = loading ? 'block' : 'none';
+  }
+
+  function showError(msg) {
+    const banner = document.getElementById('errorBanner');
+    banner.textContent = '⚠️ ' + msg;
+    banner.style.display = 'block';
+    setTimeout(() => banner.style.display = 'none', 6000);
+  }
+
+  async function submitForm() {
+    // Validation
+    const required = [
+      { id: 'crewName', label: 'Your Name' },
+      { id: 'siteDate', label: 'Date on Site' },
+      { id: 'jobAddress', label: 'Job Address' },
+      { id: 'roofType', label: 'Roof Type' },
+    ];
+
+    for (const f of required) {
+      const el = document.getElementById(f.id);
+      if (!el.value.trim()) {
+        el.focus();
+        el.style.borderColor = '#B94A1E';
+        el.style.boxShadow = '0 0 0 3px rgba(185,74,30,0.2)';
+        setTimeout(() => { el.style.borderColor = ''; el.style.boxShadow = ''; }, 2000);
+        showError(`Please fill in: ${f.label}`);
+        return;
+      }
+    }
+
+    if (WEB_APP_URL === "YOUR_WEB_APP_URL_HERE") {
+      showError("Web App URL not set yet. Paste your deployed Apps Script URL into the form first.");
+      return;
+    }
+
+    const payload = {
+      crewName: document.getElementById('crewName').value,
+      siteDate: document.getElementById('siteDate').value,
+      jobAddress: document.getElementById('jobAddress').value,
+      clientName: document.getElementById('clientName').value,
+      clientPhone: document.getElementById('clientPhone').value,
+      roofType: document.getElementById('roofType').value,
+      totalArea: document.getElementById('totalArea').value,
+      ridgeLength: document.getElementById('ridgeLength').value,
+      gutterRun: document.getElementById('gutterRun').value,
+      downpipeQty: document.getElementById('downpipeQty').value,
+      flashingRun: document.getElementById('flashingRun').value,
+      roofPitch: document.getElementById('roofPitch').value,
+      mudMapNotes: document.getElementById('mudMapNotes').value,
+      extraMeasurements: getExtraMeasurements(),
+      sketchesAttached: sketches.length,
+      cutList: getCutList(),
+      colourSpec: document.getElementById('colourSpec').value,
+      cutListNotes: document.getElementById('cutListNotes').value,
+      photos: photos.length
+    };
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(WEB_APP_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        document.getElementById('formWrap').style.display = 'none';
+        const s = document.getElementById('successScreen');
+        s.style.display = 'block';
+        setTimeout(() => s.classList.add('show'), 10);
+      } else {
+        showError('Sheet returned an error: ' + (result.message || 'Unknown error'));
+      }
+    } catch (err) {
+      showError('Could not reach the server. Check your internet connection.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function resetForm() {
+    document.getElementById('successScreen').style.display = 'none';
+    document.getElementById('successScreen').classList.remove('show');
+    document.getElementById('formWrap').style.display = 'block';
+    ['crewName','siteDate','jobAddress','clientName','clientPhone','roofType',
+     'totalArea','ridgeLength','gutterRun','downpipeQty','flashingRun','roofPitch',
+     'mudMapNotes','colourSpec','cutListNotes'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('siteDate').valueAsDate = new Date();
+    photos.length = 0;
+    renderPreviews();
+    sketches.length = 0;
+    renderSketchPreviews();
+    document.getElementById('extraMeasRows').innerHTML = `
+      <div class="extra-meas-row">
+        <input type="text" placeholder="e.g. Valley Length" style="flex:1.5">
+        <input type="text" placeholder="e.g. 18lm" style="flex:1">
+        <button class="remove-btn" onclick="removeExtraRow(this)">✕</button>
+      </div>`;
+    document.getElementById('materialRows').innerHTML = `
+      <div class="material-row">
+        <input type="text" placeholder="e.g. Colorbond Sheet – Ironstone">
+        <input type="text" placeholder="e.g. 4200mm">
+        <input type="text" placeholder="e.g. 24">
+        <button class="remove-btn" onclick="removeRow(this)">✕</button>
+      </div>`;
+  }
+</script>
+
+<script>
+  // ── Register Service Worker (PWA offline support) ──
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('✅ RDU Service Worker registered:', reg.scope))
+        .catch(err => console.log('SW registration failed:', err));
+    });
+  }
+
+  // ── iOS PWA: hide install banner if already installed ──
+  window.addEventListener('appinstalled', () => {
+    console.log('🐾 RDU Crew app installed!');
+  });
+</script>
+</body>
+</html>
