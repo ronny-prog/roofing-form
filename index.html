@@ -2,19 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mud Map & Cut List — Roofing Down Under</title>
-
-<!-- PWA -->
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#B94A1E">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="RDU Crew">
-<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
-
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -257,6 +246,19 @@
     justify-content: center;
   }
 
+  /* Upload progress */
+  .upload-status {
+    font-size: 12px;
+    color: var(--warm-grey);
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .upload-status.compressing { color: var(--orange-accent); }
+  .upload-status.ready { color: var(--green); }
+
   /* Submit button */
   .submit-btn {
     width: 100%;
@@ -472,6 +474,7 @@
           <p><strong>Tap to attach your sketch</strong></p>
           <p>Photo of hand-drawn sketch, PDF, or image file</p>
         </div>
+        <div id="sketchStatus" class="upload-status" style="display:none;"></div>
         <div class="photo-previews" id="sketchPreviews"></div>
       </div>
 
@@ -532,6 +535,7 @@
         <p><strong>Tap to upload photos</strong></p>
         <p>Before, during, measurements — anything that helps</p>
       </div>
+      <div id="photoStatus" class="upload-status" style="display:none;"></div>
       <div class="photo-previews" id="photoPreviews"></div>
     </div>
 
@@ -553,18 +557,53 @@
 
   document.getElementById('siteDate').valueAsDate = new Date();
 
-  // ── SKETCH UPLOAD ──
-  const sketches = [];
-
-  function handleSketches(files) {
-    Array.from(files).forEach(file => {
+  // ─────────────────────────────────────────────
+  // IMAGE COMPRESSION
+  // Resizes images to max 1200px wide, JPEG at 75% quality
+  // Keeps PDFs and non-image files as-is
+  // ─────────────────────────────────────────────
+  function compressImage(file, maxWidth = 1200, quality = 0.75) {
+    return new Promise((resolve) => {
+      // Non-image files (e.g. PDF) — read as-is
+      if (!file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = e => resolve({ name: file.name, data: e.target.result, type: file.type });
+        reader.readAsDataURL(file);
+        return;
+      }
       const reader = new FileReader();
       reader.onload = e => {
-        sketches.push({ name: file.name, data: e.target.result, type: file.type });
-        renderSketchPreviews();
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width, h = img.height;
+          if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          const compressed = canvas.toDataURL('image/jpeg', quality);
+          resolve({ name: file.name.replace(/\.[^.]+$/, '.jpg'), data: compressed, type: 'image/jpeg' });
+        };
+        img.src = e.target.result;
       };
       reader.readAsDataURL(file);
     });
+  }
+
+  // ── SKETCH UPLOAD ──
+  const sketches = [];
+
+  async function handleSketches(files) {
+    const statusEl = document.getElementById('sketchStatus');
+    statusEl.style.display = 'flex';
+    statusEl.className = 'upload-status compressing';
+    statusEl.textContent = '⏳ Processing ' + files.length + ' file(s)...';
+
+    const results = await Promise.all(Array.from(files).map(f => compressImage(f)));
+    results.forEach(r => sketches.push(r));
+
+    statusEl.className = 'upload-status ready';
+    statusEl.textContent = '✅ ' + sketches.length + ' sketch file(s) ready to upload';
+    renderSketchPreviews();
   }
 
   function renderSketchPreviews() {
@@ -583,7 +622,13 @@
     });
   }
 
-  function removeSketch(i) { sketches.splice(i, 1); renderSketchPreviews(); }
+  function removeSketch(i) {
+    sketches.splice(i, 1);
+    renderSketchPreviews();
+    const statusEl = document.getElementById('sketchStatus');
+    if (sketches.length === 0) { statusEl.style.display = 'none'; }
+    else { statusEl.textContent = '✅ ' + sketches.length + ' sketch file(s) ready to upload'; }
+  }
 
   const sketchDropZone = document.getElementById('sketchDropZone');
   sketchDropZone.addEventListener('dragover', e => { e.preventDefault(); sketchDropZone.classList.add('drag-over'); });
@@ -635,17 +680,21 @@
     if (rows.length > 1) btn.parentElement.remove();
   }
 
+  // ── PHOTO UPLOAD ──
   const photos = [];
 
-  function handlePhotos(files) {
-    Array.from(files).forEach(file => {
-      const reader = new FileReader();
-      reader.onload = e => {
-        photos.push({ name: file.name, data: e.target.result });
-        renderPreviews();
-      };
-      reader.readAsDataURL(file);
-    });
+  async function handlePhotos(files) {
+    const statusEl = document.getElementById('photoStatus');
+    statusEl.style.display = 'flex';
+    statusEl.className = 'upload-status compressing';
+    statusEl.textContent = '⏳ Compressing ' + files.length + ' photo(s)...';
+
+    const results = await Promise.all(Array.from(files).map(f => compressImage(f)));
+    results.forEach(r => photos.push(r));
+
+    statusEl.className = 'upload-status ready';
+    statusEl.textContent = '✅ ' + photos.length + ' photo(s) ready to upload';
+    renderPreviews();
   }
 
   function renderPreviews() {
@@ -662,7 +711,13 @@
     });
   }
 
-  function removePhoto(i) { photos.splice(i, 1); renderPreviews(); }
+  function removePhoto(i) {
+    photos.splice(i, 1);
+    renderPreviews();
+    const statusEl = document.getElementById('photoStatus');
+    if (photos.length === 0) { statusEl.style.display = 'none'; }
+    else { statusEl.textContent = '✅ ' + photos.length + ' photo(s) ready to upload'; }
+  }
 
   const dropZone = document.getElementById('dropZone');
   dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
@@ -685,7 +740,7 @@
     const text = document.getElementById('btnText');
     const spinner = document.getElementById('spinner');
     btn.disabled = loading;
-    text.textContent = loading ? 'Submitting...' : 'Submit to Rocky 🐾';
+    text.textContent = loading ? 'Uploading files & submitting...' : 'Submit to Rocky 🐾';
     spinner.style.display = loading ? 'block' : 'none';
   }
 
@@ -722,26 +777,27 @@
       return;
     }
 
+    // Build payload — include full file arrays so Apps Script can save to Drive
     const payload = {
-      crewName: document.getElementById('crewName').value,
-      siteDate: document.getElementById('siteDate').value,
-      jobAddress: document.getElementById('jobAddress').value,
-      clientName: document.getElementById('clientName').value,
-      clientPhone: document.getElementById('clientPhone').value,
-      roofType: document.getElementById('roofType').value,
-      totalArea: document.getElementById('totalArea').value,
-      ridgeLength: document.getElementById('ridgeLength').value,
-      gutterRun: document.getElementById('gutterRun').value,
-      downpipeQty: document.getElementById('downpipeQty').value,
-      flashingRun: document.getElementById('flashingRun').value,
-      roofPitch: document.getElementById('roofPitch').value,
-      mudMapNotes: document.getElementById('mudMapNotes').value,
+      crewName:          document.getElementById('crewName').value,
+      siteDate:          document.getElementById('siteDate').value,
+      jobAddress:        document.getElementById('jobAddress').value,
+      clientName:        document.getElementById('clientName').value,
+      clientPhone:       document.getElementById('clientPhone').value,
+      roofType:          document.getElementById('roofType').value,
+      totalArea:         document.getElementById('totalArea').value,
+      ridgeLength:       document.getElementById('ridgeLength').value,
+      gutterRun:         document.getElementById('gutterRun').value,
+      downpipeQty:       document.getElementById('downpipeQty').value,
+      flashingRun:       document.getElementById('flashingRun').value,
+      roofPitch:         document.getElementById('roofPitch').value,
+      mudMapNotes:       document.getElementById('mudMapNotes').value,
       extraMeasurements: getExtraMeasurements(),
-      sketchesAttached: sketches.length,
-      cutList: getCutList(),
-      colourSpec: document.getElementById('colourSpec').value,
-      cutListNotes: document.getElementById('cutListNotes').value,
-      photos: photos.length
+      sketches:          sketches,   // full base64 file objects
+      cutList:           getCutList(),
+      colourSpec:        document.getElementById('colourSpec').value,
+      cutListNotes:      document.getElementById('cutListNotes').value,
+      photos:            photos       // full base64 file objects
     };
 
     setLoading(true);
@@ -779,10 +835,15 @@
       document.getElementById(id).value = '';
     });
     document.getElementById('siteDate').valueAsDate = new Date();
+
     photos.length = 0;
     renderPreviews();
+    document.getElementById('photoStatus').style.display = 'none';
+
     sketches.length = 0;
     renderSketchPreviews();
+    document.getElementById('sketchStatus').style.display = 'none';
+
     document.getElementById('extraMeasRows').innerHTML = `
       <div class="extra-meas-row">
         <input type="text" placeholder="e.g. Valley Length" style="flex:1.5">
@@ -797,22 +858,6 @@
         <button class="remove-btn" onclick="removeRow(this)">✕</button>
       </div>`;
   }
-</script>
-
-<script>
-  // ── Register Service Worker (PWA offline support) ──
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then(reg => console.log('✅ RDU Service Worker registered:', reg.scope))
-        .catch(err => console.log('SW registration failed:', err));
-    });
-  }
-
-  // ── iOS PWA: hide install banner if already installed ──
-  window.addEventListener('appinstalled', () => {
-    console.log('🐾 RDU Crew app installed!');
-  });
 </script>
 </body>
 </html>
