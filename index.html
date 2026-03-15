@@ -552,7 +552,7 @@
   // ─────────────────────────────────────────────
   // 👇 PASTE YOUR WEB APP URL HERE AFTER DEPLOYING
   // ─────────────────────────────────────────────
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyyG7kHmXuTCU3ZHQXfCoku1EMqyg_p7c2Z5zD96o6a_0QjnF1_BtlYTrgvfYqhOxly/exec";
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzYpHzciznZvS2_Gui5JGnZMqtM6bkviygdHYYjp-2aS-pZByRKxbp0CEicqz5sUG5g/exec";
   // ─────────────────────────────────────────────
 
   document.getElementById('siteDate').valueAsDate = new Date();
@@ -793,11 +793,11 @@
       roofPitch:         document.getElementById('roofPitch').value,
       mudMapNotes:       document.getElementById('mudMapNotes').value,
       extraMeasurements: getExtraMeasurements(),
-      sketches:          sketches,   // full base64 file objects
+      sketchesAttached:  sketches.length,
       cutList:           getCutList(),
       colourSpec:        document.getElementById('colourSpec').value,
       cutListNotes:      document.getElementById('cutListNotes').value,
-      photos:            photos       // full base64 file objects
+      photos:            photos.length
     };
 
     setLoading(true);
